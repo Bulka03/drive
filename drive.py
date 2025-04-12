@@ -1,9 +1,12 @@
 from pygame import * 
+from random import randint
 window = display.set_mode((700, 500))
 background = transform.scale(image.load("New Piskel.png"), (700, 500))
 
 clock = time.Clock()
 FPS = 60
+
+font.init()
 
 class GameSprite(sprite.Sprite):
     def __init__(self, player_image, player_x, player_y, player_width, player_height, player_speed):
@@ -21,24 +24,39 @@ class GameSprite(sprite.Sprite):
 class Player(GameSprite):
     def update(self):
         keys = key.get_pressed()
-        if keys[K_LEFT] and self.rect.x > 5:
+        if keys[K_LEFT] and self.rect.x > 85:
             self.rect.x -= self.speed
-        if keys[K_RIGHT] and self.rect.x < 635:
+        if keys[K_RIGHT] and self.rect.x < 535:
             self.rect.x += self.speed
-        if keys[K_UP] and self.rect.y > 5:
-            self.rect.y -= self.speed
-        if keys[K_DOWN] and self.rect.y < 435:
-            self.rect.y += self.speed
+
+count = 0
+
+lost = 1
+
+class Enemy(GameSprite):
+    def update(self):
+        self.rect.y += self.speed
+        global lost
+        if self.rect.y > 500:
+            self.rect.y = -100
+            self.rect.x = randint(85, 535)
+            lost = lost + 1
 
 main_player = Player("New Piskel (1).png", 300, 400, 70, 70, 25)
 
-sprite1 = GameSprite("New Piskel (2).png", 150, 200, 70, 70, 25)
+sprite1 = Enemy("New Piskel (2).png", 150, 200, 70, 70, 10)
 
-sprite2 = GameSprite("New Piskel (3).png", 480, 200, 70, 70, 25)
+sprite2 = Enemy("New Piskel (3).png", 150, 200, 70, 70, 10)
+
+
+font1 = font.Font(None, 90)
+count_lifes = 3
+text_loss = font1.render("YOU LOSE", True, (255, 0, 0))
 game = True
 finish = False
 while game:
     if finish != True:
+        window.fill((0, 0, 0))
         window.blit(background,(0, 0))
         main_player.update()
         main_player.reset()
@@ -46,6 +64,14 @@ while game:
         sprite1.reset()
         sprite2.update()
         sprite2.reset()
+        if main_player.colliderect(sprite1.rect) or main_player.colliderect(sprite2.rect):
+            count_lifes -= 1
+        if sprite.collide_rect(main_player, sprite1):
+            finish = True
+            window.blit(text_loss,(200, 200))
+        if sprite.collide_rect(main_player, sprite2):
+            finish = True
+            window.blit(text_loss,(200, 200))
     for e in event.get():
         if e.type == QUIT:
             game = False
